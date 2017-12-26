@@ -18,15 +18,15 @@
 
 // flv.js TypeScript definition file
 
-declare namespace FlvJs {
+declare module 'flv.js' {
 
-    interface MediaSegment {
+    export interface MediaSegment {
         duration: number,
         filesize?: number,
         url: string
     }
 
-    interface MediaDataSource {
+    export interface MediaDataSource {
         type: string,
         isLive?: boolean,
         cors?: boolean,
@@ -42,7 +42,7 @@ declare namespace FlvJs {
         segments?: Array<MediaSegment>
     }
 
-    interface Config {
+    export interface Config {
         enableWorker?: boolean,
         enableStashBuffer?: boolean,
         stashInitialSize?: number,
@@ -72,7 +72,7 @@ declare namespace FlvJs {
         referrerPolicy?: string
     }
 
-    interface FeatureList {
+    export interface FeatureList {
         mseFlvPlayback: boolean,
         mseLiveFlvPlayback: boolean,
         networkStreamIO: boolean,
@@ -82,11 +82,11 @@ declare namespace FlvJs {
         nativeWebmVP9Playback: boolean
     }
 
-    interface PlayerConstructor {
+    export interface PlayerConstructor {
         new (mediaDataSource: MediaDataSource, config?: Config): Player;
     }
 
-    interface Player {
+    export interface Player {
         constructor: PlayerConstructor;
         destroy(): void;
         on(event: string, listener: Function): void;
@@ -107,13 +107,13 @@ declare namespace FlvJs {
         statisticsInfo: Object;
     }
 
-    interface FlvPlayer extends Player {
+    export interface FlvPlayer extends Player {
     }
 
-    interface NativePlayer extends Player {
+    export interface NativePlayer extends Player {
     }
 
-    interface LoggingControl {
+    export interface LoggingControl {
         forceGlobalTag: boolean;
         globalTag: string;
         enableAll: boolean;
@@ -128,7 +128,7 @@ declare namespace FlvJs {
         removeLogListener(listener: Function): void;
     }
 
-    interface Events {
+    export interface Events {
         ERROR: string,
         LOADING_COMPLETE: string,
         RECOVERED_EARLY_EOF: string,
@@ -136,13 +136,13 @@ declare namespace FlvJs {
         STATISTICS_INFO: string
     }
 
-    interface ErrorTypes {
+    export interface ErrorTypes {
         NETWORK_ERROR: string,
         MEDIA_ERROR: string,
         OTHER_ERROR: string
     }
 
-    interface ErrorDetails {
+    export interface ErrorDetails {
         NETWORK_EXCEPTION: string,
         NETWORK_STATUS_CODE_INVALID: string,
         NETWORK_TIMEOUT: string,
@@ -154,21 +154,18 @@ declare namespace FlvJs {
         MEDIA_FORMAT_UNSUPPORTED: string,
         MEDIA_CODEC_UNSUPPORTED: string
     }
-
+    const flvjs: {
+        createPlayer(mediaDataSource: MediaDataSource, config?: Config): Player,
+        isSupported(): boolean,
+        getFeatureList(): FeatureList,
+    
+        Events: Events,
+        ErrorTypes: ErrorTypes,
+        ErrorDetails: ErrorDetails,
+    
+        FlvPlayer: PlayerConstructor,
+        NativePlayer: PlayerConstructor,
+        LoggingControl: LoggingControl
+    };
+    export default flvjs;
 }
-
-declare var flvjs: {
-    createPlayer(mediaDataSource: FlvJs.MediaDataSource, config?: FlvJs.Config): FlvJs.Player,
-    isSupported(): boolean,
-    getFeatureList(): FlvJs.FeatureList,
-
-    Events: FlvJs.Events,
-    ErrorTypes: FlvJs.ErrorTypes,
-    ErrorDetails: FlvJs.ErrorDetails,
-
-    FlvPlayer: FlvJs.PlayerConstructor,
-    NativePlayer: FlvJs.PlayerConstructor,
-    LoggingControl: FlvJs.LoggingControl
-};
-
-export default flvjs;
