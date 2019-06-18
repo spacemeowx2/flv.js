@@ -16,24 +16,18 @@
  * limitations under the License.
  */
 
-import Polyfill from './utils/polyfill.js';
-import Features from './core/features.js';
-import {BaseLoader, LoaderStatus, LoaderErrors} from './io/loader.js';
-import FlvPlayer from './player/flv-player.js';
-import NativePlayer from './player/native-player.js';
-import PlayerEvents from './player/player-events.js';
-import {ErrorTypes, ErrorDetails} from './player/player-errors.js';
-import LoggingControl from './utils/logging-control.js';
-import {InvalidArgumentException} from './utils/exception.js';
-
-// here are all the interfaces
-
-// install polyfills
-Polyfill.install();
-
+import Features from './core/features';
+import {BaseLoader, LoaderStatus, LoaderErrors} from './io/loader';
+import FlvPlayer from './player/flv-player';
+import NativePlayer from './player/native-player';
+import PlayerEvents from './player/player-events';
+import {ErrorTypes, ErrorDetails} from './player/player-errors';
+import LoggingControl from './utils/logging-control';
+import {InvalidArgumentException} from './utils/exception';
+import { MediaDataSource, Config } from './types';
 
 // factory method
-function createPlayer(mediaDataSource, optionalConfig) {
+function createPlayer(mediaDataSource: MediaDataSource, optionalConfig: Config) {
     let mds = mediaDataSource;
     if (mds == null || typeof mds !== 'object') {
         throw new InvalidArgumentException('MediaDataSource must be an javascript object!');
@@ -63,30 +57,20 @@ function getFeatureList() {
 
 
 // interfaces
-let flvjs = {};
-
-flvjs.createPlayer = createPlayer;
-flvjs.isSupported = isSupported;
-flvjs.getFeatureList = getFeatureList;
-
-flvjs.BaseLoader = BaseLoader;
-flvjs.LoaderStatus = LoaderStatus;
-flvjs.LoaderErrors = LoaderErrors;
-
-flvjs.Events = PlayerEvents;
-flvjs.ErrorTypes = ErrorTypes;
-flvjs.ErrorDetails = ErrorDetails;
-
-flvjs.FlvPlayer = FlvPlayer;
-flvjs.NativePlayer = NativePlayer;
-flvjs.LoggingControl = LoggingControl;
-
-Object.defineProperty(flvjs, 'version', {
-    enumerable: true,
-    get: function () {
-        // replaced by browserify-versionify transform
+export const flvjs = {
+    createPlayer,
+    isSupported,
+    getFeatureList,
+    BaseLoader,
+    LoaderStatus,
+    LoaderErrors,
+    Events: PlayerEvents,
+    ErrorTypes,
+    ErrorDetails,
+    FlvPlayer,
+    NativePlayer,
+    LoggingControl,
+    get version () {
         return '__VERSION__';
     }
-});
-
-export default flvjs;
+};

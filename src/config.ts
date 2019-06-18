@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Config } from "./types";
 
-export const defaultConfig = {
+export const defaultConfig: Config = {
     enableWorker: false,
     enableStashBuffer: true,
     stashInitialSize: undefined,
@@ -50,5 +51,7 @@ export const defaultConfig = {
 };
 
 export function createDefaultConfig() {
-    return Object.assign({}, defaultConfig);
+    return {
+        ...defaultConfig
+    };
 }

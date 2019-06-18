@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-import IOController from '../io/io-controller.js';
-import {createDefaultConfig} from '../config.js';
+import IOController from '../io/io-controller';
+import {createDefaultConfig} from '../config';
 
 class Features {
+    static videoElement: HTMLVideoElement
 
     static supportMSEH264Playback() {
-        return window.MediaSource &&
-               window.MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E,mp4a.40.2"');
+        return !!(window.MediaSource &&
+               window.MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E,mp4a.40.2"'));
     }
 
     static supportNetworkStreamIO() {
@@ -40,7 +41,7 @@ class Features {
         return loaderType;
     }
 
-    static supportNativeMediaPlayback(mimeType) {
+    static supportNativeMediaPlayback(mimeType: string) {
         if (Features.videoElement == undefined) {
             Features.videoElement = window.document.createElement('video');
         }

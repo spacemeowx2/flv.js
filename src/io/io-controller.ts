@@ -27,6 +27,7 @@ import WebSocketLoader from './websocket-loader.js';
 import RangeSeekHandler from './range-seek-handler.js';
 import ParamSeekHandler from './param-seek-handler.js';
 import {RuntimeException, IllegalStateException, InvalidArgumentException} from '../utils/exception.js';
+import { Config } from '../types';
 
 /**
  * DataSource: {
@@ -40,56 +41,55 @@ import {RuntimeException, IllegalStateException, InvalidArgumentException} from 
 
 // Manage IO Loaders
 class IOController {
+    TAG = 'IOController';
+    _stashInitialSize = 1024 * 384;  // default initial size: 384KB
 
-    constructor(dataSource, config, extraData) {
+    _stashUsed = 0;
+    _stashSize = this._stashInitialSize;
+    _bufferSize = 1024 * 1024 * 3;  // initial size: 3MB
+    _stashBuffer = new ArrayBuffer(this._bufferSize);
+    _stashByteStart = 0;
+    _enableStash = true;
+
+    _loader = null;
+    _loaderClass = null;
+    _seekHandler = null;
+
+    _dataSource = dataSource;
+    _isWebSocketURL = /wss?:\/\/(.+?)/.test(dataSource.url);
+    _refTotalLength = dataSource.filesize ? dataSource.filesize : null;
+    _totalLength = this._refTotalLength;
+    _fullRequestFlag = false;
+    _currentRange = null;
+    _redirectedURL = null;
+
+    _speedNormalized = 0;
+    _speedSampler = new SpeedSampler();
+    _speedNormalizeList = [64, 128, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096];
+
+    _isEarlyEofReconnecting = false;
+
+    _paused = false;
+    _resumeFrom = 0;
+
+    _onDataArrival = null;
+    _onSeeked = null;
+    _onError = null;
+    _onComplete = null;
+    _onRedirect = null;
+    _onRecoveredEarlyEof = null;
+
+    constructor(private _dataSource, private _config: Config, private _extraData) {
         this.TAG = 'IOController';
 
-        this._config = config;
-        this._extraData = extraData;
-
-        this._stashInitialSize = 1024 * 384;  // default initial size: 384KB
         if (config.stashInitialSize != undefined && config.stashInitialSize > 0) {
             // apply from config
             this._stashInitialSize = config.stashInitialSize;
         }
 
-        this._stashUsed = 0;
-        this._stashSize = this._stashInitialSize;
-        this._bufferSize = 1024 * 1024 * 3;  // initial size: 3MB
-        this._stashBuffer = new ArrayBuffer(this._bufferSize);
-        this._stashByteStart = 0;
-        this._enableStash = true;
         if (config.enableStashBuffer === false) {
             this._enableStash = false;
         }
-
-        this._loader = null;
-        this._loaderClass = null;
-        this._seekHandler = null;
-
-        this._dataSource = dataSource;
-        this._isWebSocketURL = /wss?:\/\/(.+?)/.test(dataSource.url);
-        this._refTotalLength = dataSource.filesize ? dataSource.filesize : null;
-        this._totalLength = this._refTotalLength;
-        this._fullRequestFlag = false;
-        this._currentRange = null;
-        this._redirectedURL = null;
-
-        this._speedNormalized = 0;
-        this._speedSampler = new SpeedSampler();
-        this._speedNormalizeList = [64, 128, 256, 384, 512, 768, 1024, 1536, 2048, 3072, 4096];
-
-        this._isEarlyEofReconnecting = false;
-
-        this._paused = false;
-        this._resumeFrom = 0;
-
-        this._onDataArrival = null;
-        this._onSeeked = null;
-        this._onError = null;
-        this._onComplete = null;
-        this._onRedirect = null;
-        this._onRecoveredEarlyEof = null;
 
         this._selectSeekHandler();
         this._selectLoader();
